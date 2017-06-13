@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2017 the Urho3D project.
+// Copyright (c) 2008-2016 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -110,6 +110,7 @@ AnimationSet2D::AnimationSet2D(Context* context) :
     skeletonData_(0),
     atlas_(0),
 #endif
+    spriterData_(0),
     hasSpriteSheet_(false)
 {
 }
@@ -193,11 +194,11 @@ bool AnimationSet2D::HasAnimation(const String& animationName) const
                 return true;
         }
     }
-#endif
+#endif    
     if (spriterData_ && !spriterData_->entities_.Empty())
     {
         const PODVector<Spriter::Animation*>& animations = spriterData_->entities_[0]->animations_;
-        for (unsigned i = 0; i < animations.Size(); ++i)
+        for (size_t i = 0; i < animations.Size(); ++i)
         {
             if (animationName == animations[i]->name_)
                 return true;
@@ -321,10 +322,10 @@ bool AnimationSet2D::BeginLoadSpriter(Deserializer& source)
             cache->BackgroundLoadResource<SpriteSheet2D>(spriteSheetFilePath_, true, this);
         else
         {
-            for (unsigned i = 0; i < spriterData_->folders_.Size(); ++i)
+            for (size_t i = 0; i < spriterData_->folders_.Size(); ++i)
             {
                 Spriter::Folder* folder = spriterData_->folders_[i];
-                for (unsigned j = 0; j < folder->files_.Size(); ++j)
+                for (size_t j = 0; j < folder->files_.Size(); ++j)
                 {
                     Spriter::File* file = folder->files_[j];
                     String imagePath = parentPath + file->name_;
@@ -524,7 +525,11 @@ void AnimationSet2D::Dispose()
     }
 #endif
 
-    spriterData_.Reset();
+    if (spriterData_)
+    {
+        delete spriterData_;
+        spriterData_ = 0;
+    }
 
     sprite_.Reset();
     spriteSheet_.Reset();

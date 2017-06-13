@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2017 the Urho3D project.
+// Copyright (c) 2008-2016 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,6 @@
 #include "../UI/LineEdit.h"
 #include "../UI/ListView.h"
 #include "../UI/MessageBox.h"
-#include "../UI/ProgressBar.h"
 #include "../UI/ScrollBar.h"
 #include "../UI/Slider.h"
 #include "../UI/Sprite.h"
@@ -60,20 +59,10 @@ static bool FontSaveXML(const String& fileName, int pointSize, bool usedGlyphs, 
     return ptr->SaveXML(file, pointSize, usedGlyphs, indentation);
 }
 
-static bool FontSaveXMLFile(File* file, int pointSize, bool usedGlyphs, const String& indentation, Font* ptr)
-{
-    return ptr->SaveXML(*file, pointSize, usedGlyphs, indentation);
-}
-
 static void RegisterFont(asIScriptEngine* engine)
 {
-    engine->RegisterEnum("FontType");
-    engine->RegisterEnumValue("FontType", "FONT_NONE", FONT_NONE);
-    engine->RegisterEnumValue("FontType", "FONT_FREETYPE", FONT_FREETYPE);
-    engine->RegisterEnumValue("FontType", "FONT_BITMAP", FONT_BITMAP);
-
     RegisterResource<Font>(engine, "Font");
-    engine->RegisterObjectMethod("Font", "bool SaveXML(File@+, int, bool usedGlyphs = false, const String&in indentation = \"\t\")", asFUNCTION(FontSaveXMLFile), asCALL_CDECL_OBJLAST);
+    engine->RegisterObjectMethod("Font", "bool SaveXML(File@+, int, bool usedGlyphs = false, const String&in indentation = \"\t\")", asMETHOD(Font, SaveXML), asCALL_THISCALL);
     engine->RegisterObjectMethod("Font", "bool SaveXML(VectorBuffer&, int, bool usedGlyphs = false, const String&in indentation = \"\t\")", asFUNCTION(FontSaveXMLVectorBuffer), asCALL_CDECL_OBJLAST);
     engine->RegisterObjectMethod("Font", "bool SaveXML(const String&in, int, bool usedGlyphs = false, const String&in indentation = \"\t\")", asFUNCTION(FontSaveXML), asCALL_CDECL_OBJLAST);
     engine->RegisterObjectMethod("Font", "IntVector2 GetTotalGlyphOffset(int) const", asMETHOD(Font, GetTotalGlyphOffset), asCALL_THISCALL);
@@ -81,7 +70,6 @@ static void RegisterFont(asIScriptEngine* engine)
     engine->RegisterObjectMethod("Font", "const IntVector2& get_absoluteGlyphOffset() const", asMETHOD(Font, GetAbsoluteGlyphOffset), asCALL_THISCALL);
     engine->RegisterObjectMethod("Font", "void set_scaledGlyphOffset(const Vector2&)", asMETHOD(Font, SetScaledGlyphOffset), asCALL_THISCALL);
     engine->RegisterObjectMethod("Font", "const Vector2& get_scaledGlyphOffset() const", asMETHOD(Font, GetScaledGlyphOffset), asCALL_THISCALL);
-    engine->RegisterObjectMethod("Font", "FontType get_fontType() const", asMETHOD(Font, GetFontType), asCALL_THISCALL);
 }
 
 static void RegisterUIElement(asIScriptEngine* engine)
@@ -90,13 +78,11 @@ static void RegisterUIElement(asIScriptEngine* engine)
     engine->RegisterEnumValue("HorizontalAlignment", "HA_LEFT", HA_LEFT);
     engine->RegisterEnumValue("HorizontalAlignment", "HA_CENTER", HA_CENTER);
     engine->RegisterEnumValue("HorizontalAlignment", "HA_RIGHT", HA_RIGHT);
-    engine->RegisterEnumValue("HorizontalAlignment", "HA_CUSTOM", HA_CUSTOM);
 
     engine->RegisterEnum("VerticalAlignment");
     engine->RegisterEnumValue("VerticalAlignment", "VA_TOP", VA_TOP);
     engine->RegisterEnumValue("VerticalAlignment", "VA_CENTER", VA_CENTER);
     engine->RegisterEnumValue("VerticalAlignment", "VA_BOTTOM", VA_BOTTOM);
-    engine->RegisterEnumValue("VerticalAlignment", "VA_CUSTOM", VA_CUSTOM);
 
     engine->RegisterEnum("Corner");
     engine->RegisterEnumValue("Corner", "C_TOPLEFT", C_TOPLEFT);
@@ -454,7 +440,6 @@ static void RegisterText3D(asIScriptEngine* engine)
     engine->RegisterObjectMethod("Text3D", "float get_effectDepthBias() const", asMETHOD(Text3D, GetEffectDepthBias), asCALL_THISCALL);
     engine->RegisterObjectMethod("Text3D", "void set_width(int)", asMETHOD(Text3D, SetWidth), asCALL_THISCALL);
     engine->RegisterObjectMethod("Text3D", "int get_width() const", asMETHOD(Text3D, GetWidth), asCALL_THISCALL);
-    engine->RegisterObjectMethod("Text3D", "int get_height() const", asMETHOD(Text3D, GetHeight), asCALL_THISCALL);
     engine->RegisterObjectMethod("Text3D", "void set_color(const Color&in)", asMETHODPR(Text3D, SetColor, (const Color&), void), asCALL_THISCALL);
     engine->RegisterObjectMethod("Text3D", "void set_colors(Corner, const Color&in)", asMETHODPR(Text3D, SetColor, (Corner, const Color&), void), asCALL_THISCALL);
     engine->RegisterObjectMethod("Text3D", "const Color& get_colors(Corner) const", asMETHOD(Text3D, GetColor), asCALL_THISCALL);
@@ -524,22 +509,6 @@ static void RegisterMessageBox(asIScriptEngine* engine)
     engine->RegisterObjectMethod("MessageBox", "void set_message(const String&in)", asMETHOD(MessageBox, SetMessage), asCALL_THISCALL);
     engine->RegisterObjectMethod("MessageBox", "const String& get_message() const", asMETHOD(MessageBox, GetMessage), asCALL_THISCALL);
     engine->RegisterObjectMethod("MessageBox", "UIElement@+ get_window() const", asMETHOD(MessageBox, GetWindow), asCALL_THISCALL);
-}
-
-static void RegisterProgressBar(asIScriptEngine* engine)
-{
-    RegisterObject<ProgressBar>(engine, "ProgressBar");
-    engine->RegisterObjectMethod("ProgressBar", "void set_orientation(Orientation)", asMETHOD(ProgressBar, SetOrientation), asCALL_THISCALL);
-    engine->RegisterObjectMethod("ProgressBar", "Orientation get_orientation() const", asMETHOD(ProgressBar, GetOrientation), asCALL_THISCALL);
-    engine->RegisterObjectMethod("ProgressBar", "void set_range(float)", asMETHOD(ProgressBar, SetRange), asCALL_THISCALL);
-    engine->RegisterObjectMethod("ProgressBar", "float get_range() const", asMETHOD(ProgressBar, GetRange), asCALL_THISCALL);
-    engine->RegisterObjectMethod("ProgressBar", "void set_value(float)", asMETHOD(ProgressBar, SetValue), asCALL_THISCALL);
-    engine->RegisterObjectMethod("ProgressBar", "float get_value() const", asMETHOD(ProgressBar, GetValue), asCALL_THISCALL);
-    engine->RegisterObjectMethod("ProgressBar", "void set_showPercentText(bool)", asMETHOD(ProgressBar, SetShowPercentText), asCALL_THISCALL);
-    engine->RegisterObjectMethod("ProgressBar", "bool get_showPercentText() const", asMETHOD(ProgressBar, GetShowPercentText), asCALL_THISCALL);
-    engine->RegisterObjectMethod("ProgressBar", "void ChangeValue(float)", asMETHOD(ProgressBar, ChangeValue), asCALL_THISCALL);
-    engine->RegisterObjectMethod("ProgressBar", "BorderImage@+ get_knob() const", asMETHOD(ProgressBar, GetKnob), asCALL_THISCALL);
-    engine->RegisterObjectMethod("ProgressBar", "void SetLoadingPercentStyle(const String&in)", asMETHOD(ProgressBar, SetLoadingPercentStyle), asCALL_THISCALL);
 }
 
 static CScriptArray* DropDownListGetItems(DropDownList* ptr)
@@ -744,9 +713,8 @@ static void RegisterUI(asIScriptEngine* engine)
     engine->RegisterObjectMethod("UI", "bool SaveLayout(File@+, UIElement@+)", asFUNCTION(UISaveLayout), asCALL_CDECL_OBJLAST);
     engine->RegisterObjectMethod("UI", "bool SaveLayout(VectorBuffer&, UIElement@+)", asFUNCTION(UISaveLayoutVectorBuffer), asCALL_CDECL_OBJLAST);
     engine->RegisterObjectMethod("UI", "void SetFocusElement(UIElement@+, bool byKey = false)", asMETHOD(UI, SetFocusElement), asCALL_THISCALL);
-    engine->RegisterObjectMethod("UI", "void SetWidth(float)", asMETHOD(UI, SetWidth), asCALL_THISCALL);
-    engine->RegisterObjectMethod("UI", "void SetHeight(float)", asMETHOD(UI, SetHeight), asCALL_THISCALL);
-    engine->RegisterObjectMethod("UI", "void SetCustomSize(int, int)", asMETHODPR(UI, SetCustomSize, (int, int), void), asCALL_THISCALL);
+    engine->RegisterObjectMethod("UI", "void SetWidth(float value)", asMETHOD(UI, SetWidth), asCALL_THISCALL);
+    engine->RegisterObjectMethod("UI", "void SetHeight(float value)", asMETHOD(UI, SetHeight), asCALL_THISCALL);
     engine->RegisterObjectMethod("UI", "UIElement@+ GetElementAt(const IntVector2&in, bool activeOnly = true)", asMETHODPR(UI, GetElementAt, (const IntVector2&, bool), UIElement*), asCALL_THISCALL);
     engine->RegisterObjectMethod("UI", "UIElement@+ GetElementAt(int, int, bool activeOnly = true)", asMETHODPR(UI, GetElementAt, (int, int, bool), UIElement*), asCALL_THISCALL);
     engine->RegisterObjectMethod("UI", "bool HasModalElement() const", asMETHOD(UI, HasModalElement), asCALL_THISCALL);
@@ -784,8 +752,6 @@ static void RegisterUI(asIScriptEngine* engine)
     engine->RegisterObjectMethod("UI", "bool get_forceAutoHint() const", asMETHOD(UI, GetForceAutoHint), asCALL_THISCALL);
     engine->RegisterObjectMethod("UI", "void set_scale(float value)", asMETHOD(UI, SetScale), asCALL_THISCALL);
     engine->RegisterObjectMethod("UI", "float get_scale() const", asMETHOD(UI, GetScale), asCALL_THISCALL);
-    engine->RegisterObjectMethod("UI", "void set_customSize(const IntVector2&in)", asMETHODPR(UI, SetCustomSize, (const IntVector2&), void), asCALL_THISCALL);
-    engine->RegisterObjectMethod("UI", "const IntVector2& get_customSize() const", asMETHOD(UI, GetCustomSize), asCALL_THISCALL);
     engine->RegisterGlobalFunction("UI@+ get_ui()", asFUNCTION(GetUI), asCALL_CDECL);
 }
 
@@ -807,7 +773,6 @@ void RegisterUIAPI(asIScriptEngine* engine)
     RegisterLineEdit(engine);
     RegisterMenu(engine);
     RegisterMessageBox(engine);
-    RegisterProgressBar(engine);
     RegisterDropDownList(engine);
     RegisterWindow(engine);
     RegisterView3D(engine);

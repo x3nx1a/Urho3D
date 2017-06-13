@@ -1,5 +1,5 @@
 ﻿//
-// Copyright (c) 2008-2017 the Urho3D project.
+// Copyright (c) 2008-2016 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -47,21 +47,20 @@ namespace Urho3D
 
 Node::Node(Context* context) :
     Animatable(context),
+    networkUpdate_(false),
     worldTransform_(Matrix3x4::IDENTITY),
     dirty_(false),
     enabled_(true),
     enabledPrev_(true),
-    networkUpdate_(false),
     parent_(0),
     scene_(0),
     id_(0),
     position_(Vector3::ZERO),
     rotation_(Quaternion::IDENTITY),
     scale_(Vector3::ONE),
-    worldRotation_(Quaternion::IDENTITY)
+    worldRotation_(Quaternion::IDENTITY),
+    owner_(0)
 {
-    impl_ = new NodeImpl();
-    impl_->owner_ = 0;
 }
 
 Node::~Node()
@@ -321,10 +320,10 @@ bool Node::SaveJSON(Serializer& dest, const String& indentation) const
 
 void Node::SetName(const String& name)
 {
-    if (name != impl_->name_)
+    if (name != name_)
     {
-        impl_->name_ = name;
-        impl_->nameHash_ = name;
+        name_ = name;
+        nameHash_ = name_;
 
         MarkNetworkUpdate();
 
@@ -354,9 +353,9 @@ void Node::AddTag(const String& tag)
     // Check if tag empty or already added
     if (tag.Empty() || HasTag(tag))
         return;
-
+    
     // Add tag
-    impl_->tags_.Push(tag);
+    tags_.Push(tag);
 
     // Cache
     scene_->NodeTagAdded(this, tag);
@@ -388,7 +387,7 @@ void Node::AddTags(const StringVector& tags)
 
 bool Node::RemoveTag(const String& tag)
 {
-    bool removed = impl_->tags_.Remove(tag);
+    bool removed = tags_.Remove(tag);
 
     // Nothing to do
     if (!removed)
@@ -406,7 +405,7 @@ bool Node::RemoveTag(const String& tag)
         eventData[P_TAG] = tag;
         scene_->SendEvent(E_NODETAGREMOVED, eventData);
     }
-
+    
     // Sync
     MarkNetworkUpdate();
     return true;
@@ -417,21 +416,21 @@ void Node::RemoveAllTags()
     // Clear old scene cache
     if (scene_)
     {
-        for (unsigned i = 0; i < impl_->tags_.Size(); ++i)
+        for (unsigned i = 0; i < tags_.Size(); ++i)
         {
-            scene_->NodeTagRemoved(this, impl_->tags_[i]);
+            scene_->NodeTagRemoved(this, tags_[i]);
 
             // Send event
             using namespace NodeTagRemoved;
             VariantMap& eventData = GetEventDataMap();
             eventData[P_SCENE] = scene_;
             eventData[P_NODE] = this;
-            eventData[P_TAG] = impl_->tags_[i];
+            eventData[P_TAG] = tags_[i];
             scene_->SendEvent(E_NODETAGREMOVED, eventData);
         }
     }
 
-    impl_->tags_.Clear();
+    tags_.Clear();
 
     // Sync
     MarkNetworkUpdate();
@@ -501,11 +500,6 @@ void Node::SetTransform(const Vector3& position, const Quaternion& rotation, con
     MarkDirty();
 
     MarkNetworkUpdate();
-}
-
-void Node::SetTransform(const Matrix3x4& matrix)
-{
-    SetTransform(matrix.Translation(), matrix.Rotation(), matrix.Scale());
 }
 
 void Node::SetWorldPosition(const Vector3& position)
@@ -730,7 +724,7 @@ void Node::SetEnabledRecursive(bool enable)
 
 void Node::SetOwner(Connection* owner)
 {
-    impl_->owner_ = owner;
+    owner_ = owner;
 }
 
 void Node::MarkDirty()
@@ -782,16 +776,11 @@ void Node::MarkDirty()
     }
 }
 
-Node* Node::CreateChild(const String& name, CreateMode mode, unsigned id, bool temporary)
+Node* Node::CreateChild(const String& name, CreateMode mode, unsigned id)
 {
-    Node* newNode = CreateChild(id, mode, temporary);
+    Node* newNode = CreateChild(id, mode);
     newNode->SetName(name);
     return newNode;
-}
-
-Node* Node::CreateTemporaryChild(const String& name, CreateMode mode, unsigned id)
-{
-    return CreateChild(name, mode, id, true);
 }
 
 void Node::AddChild(Node* node, unsigned index)
@@ -800,10 +789,15 @@ void Node::AddChild(Node* node, unsigned index)
     if (!node || node == this || node->parent_ == this)
         return;
     // Check for possible cyclic parent assignment
-    if (IsChildOf(node))
-        return;
+    Node* parent = parent_;
+    while (parent)
+    {
+        if (parent == node)
+            return;
+        parent = parent->parent_;
+    }
 
-    // Keep a shared ptr to the node while transferring
+    // Keep a shared ptr to the node while transfering
     SharedPtr<Node> nodeShared(node);
     Node* oldParent = node->parent_;
     if (oldParent)
@@ -838,9 +832,6 @@ void Node::AddChild(Node* node, unsigned index)
     node->parent_ = this;
     node->MarkDirty();
     node->MarkNetworkUpdate();
-    // If the child node has components, also mark network update on them to ensure they have a valid NetworkState
-    for (Vector<SharedPtr<Component> >::Iterator i = node->components_.Begin(); i != node->components_.End(); ++i)
-        (*i)->MarkNetworkUpdate();
 
     // Send change event
     if (scene_)
@@ -1171,14 +1162,6 @@ void Node::RemoveListener(Component* component)
     }
 }
 
-Vector3 Node::GetSignedWorldScale() const
-{
-    if (dirty_)
-        UpdateWorldTransform();
-
-    return worldTransform_.SignedScale(worldRotation_.RotationMatrix());
-}
-
 Vector3 Node::LocalToWorld(const Vector3& position) const
 {
     return GetWorldTransform() * position;
@@ -1238,13 +1221,6 @@ void Node::GetChildren(PODVector<Node*>& dest, bool recursive) const
         GetChildrenRecursive(dest);
 }
 
-PODVector<Node*> Node::GetChildren(bool recursive) const
-{
-    PODVector<Node*> dest;
-    GetChildren(dest, recursive);
-    return dest;
-}
-
 void Node::GetChildrenWithComponent(PODVector<Node*>& dest, StringHash type, bool recursive) const
 {
     dest.Clear();
@@ -1261,13 +1237,6 @@ void Node::GetChildrenWithComponent(PODVector<Node*>& dest, StringHash type, boo
         GetChildrenWithComponentRecursive(dest, type);
 }
 
-PODVector<Node*> Node::GetChildrenWithComponent(StringHash type, bool recursive) const
-{
-    PODVector<Node*> dest;
-    GetChildrenWithComponent(dest, type, recursive);
-    return dest;
-}
-
 void Node::GetChildrenWithTag(PODVector<Node*>& dest, const String& tag, bool recursive /*= true*/) const
 {
     dest.Clear();
@@ -1282,13 +1251,6 @@ void Node::GetChildrenWithTag(PODVector<Node*>& dest, const String& tag, bool re
     }
     else
         GetChildrenWithTagRecursive(dest, tag);
-}
-
-PODVector<Node*> Node::GetChildrenWithTag(const String& tag, bool recursive) const
-{
-    PODVector<Node*> dest;
-    GetChildrenWithTag(dest, tag, recursive);
-    return dest;
 }
 
 Node* Node::GetChild(unsigned index) const
@@ -1364,19 +1326,7 @@ bool Node::HasComponent(StringHash type) const
 
 bool Node::HasTag(const String& tag) const
 {
-    return impl_->tags_.Contains(tag);
-}
-
-bool Node::IsChildOf(Node* node) const
-{
-    Node* parent = parent_;
-    while (parent)
-    {
-        if (parent == node)
-            return true;
-        parent = parent->parent_;
-    }
-    return false;
+    return tags_.Contains(tag);
 }
 
 const Variant& Node::GetVar(StringHash key) const
@@ -1503,21 +1453,21 @@ const Vector3& Node::GetNetPositionAttr() const
 
 const PODVector<unsigned char>& Node::GetNetRotationAttr() const
 {
-    impl_->attrBuffer_.Clear();
-    impl_->attrBuffer_.WritePackedQuaternion(rotation_);
-    return impl_->attrBuffer_.GetBuffer();
+    attrBuffer_.Clear();
+    attrBuffer_.WritePackedQuaternion(rotation_);
+    return attrBuffer_.GetBuffer();
 }
 
 const PODVector<unsigned char>& Node::GetNetParentAttr() const
 {
-    impl_->attrBuffer_.Clear();
+    attrBuffer_.Clear();
     Scene* scene = GetScene();
     if (scene && parent_ && parent_ != scene)
     {
         // If parent is replicated, can write the ID directly
         unsigned parentID = parent_->GetID();
         if (parentID < FIRST_LOCAL_ID)
-            impl_->attrBuffer_.WriteNetID(parentID);
+            attrBuffer_.WriteNetID(parentID);
         else
         {
             // Parent is local: traverse hierarchy to find a non-local base node
@@ -1527,12 +1477,12 @@ const PODVector<unsigned char>& Node::GetNetParentAttr() const
                 current = current->GetParent();
 
             // Then write the base node ID and the parent's name hash
-            impl_->attrBuffer_.WriteNetID(current->GetID());
-            impl_->attrBuffer_.WriteStringHash(parent_->GetNameHash());
+            attrBuffer_.WriteNetID(current->GetID());
+            attrBuffer_.WriteStringHash(parent_->GetNameHash());
         }
     }
 
-    return impl_->attrBuffer_.GetBuffer();
+    return attrBuffer_.GetBuffer();
 }
 
 bool Node::Load(Deserializer& source, SceneResolver& resolver, bool readChildren, bool rewriteIDs, CreateMode mode)
@@ -1672,7 +1622,7 @@ bool Node::LoadJSON(const JSONValue& source, SceneResolver& resolver, bool readC
 void Node::PrepareNetworkUpdate()
 {
     // Update dependency nodes list first
-    impl_->dependencyNodes_.Clear();
+    dependencyNodes_.Clear();
 
     // Add the parent node, but if it is local, traverse to the first non-local node
     if (parent_ && parent_ != scene_)
@@ -1681,7 +1631,7 @@ void Node::PrepareNetworkUpdate()
         while (current->id_ >= FIRST_LOCAL_ID)
             current = current->parent_;
         if (current && current != scene_)
-            impl_->dependencyNodes_.Push(current);
+            dependencyNodes_.Push(current);
     }
 
     // Let the components add their dependencies
@@ -1689,7 +1639,7 @@ void Node::PrepareNetworkUpdate()
     {
         Component* component = *i;
         if (component->GetID() < FIRST_LOCAL_ID)
-            component->GetDependencyNodes(impl_->dependencyNodes_);
+            component->GetDependencyNodes(dependencyNodes_);
     }
 
     // Then check for node attribute changes
@@ -1698,6 +1648,16 @@ void Node::PrepareNetworkUpdate()
 
     const Vector<AttributeInfo>* attributes = networkState_->attributes_;
     unsigned numAttributes = attributes->Size();
+
+    if (networkState_->currentValues_.Size() != numAttributes)
+    {
+        networkState_->currentValues_.Resize(numAttributes);
+        networkState_->previousValues_.Resize(numAttributes);
+
+        // Copy the default attribute values to the previous state as a starting point
+        for (unsigned i = 0; i < numAttributes; ++i)
+            networkState_->previousValues_[i] = attributes->At(i).defaultValue_;
+    }
 
     // Check for attribute changes
     for (unsigned i = 0; i < numAttributes; ++i)
@@ -1759,8 +1719,8 @@ void Node::PrepareNetworkUpdate()
 
 void Node::CleanupConnection(Connection* connection)
 {
-    if (impl_->owner_ == connection)
-        impl_->owner_ = 0;
+    if (owner_ == connection)
+        owner_ = 0;
 
     if (networkState_)
     {
@@ -1789,10 +1749,9 @@ void Node::MarkReplicationDirty()
     }
 }
 
-Node* Node::CreateChild(unsigned id, CreateMode mode, bool temporary)
+Node* Node::CreateChild(unsigned id, CreateMode mode)
 {
     SharedPtr<Node> newNode(new Node(context_));
-    newNode->SetTemporary(temporary);
 
     // If zero ID specified, or the ID is already taken, let the scene assign
     if (scene_)
@@ -1916,18 +1875,8 @@ Animatable* Node::FindAttributeAnimationTarget(const String& name, String& outNa
             if (names[i].Front() != '#')
                 break;
 
-            String name = names[i].Substring(1, names[i].Length() - 1);
-            char s = name.Front();
-            if (s >= '0' && s <= '9')
-            {
-                unsigned index = ToUInt(name);
-                node = node->GetChild(index);
-            }
-            else
-            {
-                node = node->GetChild(name, true);
-            }
-
+            unsigned index = ToUInt(names[i].Substring(1, names[i].Length() - 1));
+            node = node->GetChild(index);
             if (!node)
             {
                 URHO3D_LOGERROR("Could not find node by name " + name);
@@ -2092,12 +2041,9 @@ void Node::UpdateWorldTransform() const
 
 void Node::RemoveChild(Vector<SharedPtr<Node> >::Iterator i)
 {
-    // Keep a shared pointer to the child about to be removed, to make sure the erase from container completes first. Otherwise
-    // it would be possible that other child nodes get removed as part of the node's components' cleanup, causing a re-entrant
-    // erase and a crash
-    SharedPtr<Node> child(*i);
+    // Send change event. Do not send when already being destroyed
+    Node* child = *i;
 
-    // Send change event. Do not send when this node is already being destroyed
     if (Refs() > 0 && scene_)
     {
         using namespace NodeRemoved;

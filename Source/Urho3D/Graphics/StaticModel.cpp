@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2017 the Urho3D project.
+// Copyright (c) 2008-2016 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -234,9 +234,12 @@ void StaticModel::SetModel(Model* model)
     if (model == model_)
         return;
 
-    if (!node_)
+    // If script erroneously calls StaticModel::SetModel on an AnimatedModel, warn and redirect
+    if (GetType() == AnimatedModel::GetTypeStatic())
     {
-        URHO3D_LOGERROR("Can not set model while model component is not attached to a scene node");
+        URHO3D_LOGWARNING("StaticModel::SetModel() called on AnimatedModel. Redirecting to AnimatedModel::SetModel()");
+        AnimatedModel* animatedModel = static_cast<AnimatedModel*>(this);
+        animatedModel->SetModel(model);
         return;
     }
 
@@ -394,7 +397,7 @@ const ResourceRefList& StaticModel::GetMaterialsAttr() const
 {
     materialsAttr_.names_.Resize(batches_.Size());
     for (unsigned i = 0; i < batches_.Size(); ++i)
-        materialsAttr_.names_[i] = GetResourceName(GetMaterial(i));
+        materialsAttr_.names_[i] = GetResourceName(batches_[i].material_);
 
     return materialsAttr_;
 }

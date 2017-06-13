@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2017 the Urho3D project.
+// Copyright (c) 2008-2016 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -182,7 +182,7 @@ void ScrollView::ApplyAttributes()
     if (scrollPanel_->GetNumChildren())
         SetContentElement(scrollPanel_->GetChild(0));
 
-    OnResize(GetSize(), IntVector2::ZERO);
+    OnResize();
 
     // Reapply view position with proper content element and size
     SetViewPosition(viewPositionAttr_);
@@ -262,7 +262,7 @@ void ScrollView::OnKey(int key, int buttons, int qualifiers)
     }
 }
 
-void ScrollView::OnResize(const IntVector2& newSize, const IntVector2& delta)
+void ScrollView::OnResize()
 {
     UpdatePanelSize();
     UpdateViewSize();
@@ -297,7 +297,7 @@ void ScrollView::SetContentElement(UIElement* element)
         SubscribeToEvent(contentElement_, E_RESIZED, URHO3D_HANDLER(ScrollView, HandleElementResized));
     }
 
-    OnResize(GetSize(), IntVector2::ZERO);
+    OnResize();
 }
 
 void ScrollView::SetViewPosition(const IntVector2& position)
@@ -325,7 +325,7 @@ void ScrollView::SetScrollBarsAutoVisible(bool enable)
         scrollBarsAutoVisible_ = enable;
         // Check whether scrollbars should be visible now
         if (enable)
-            OnResize(GetSize(), IntVector2::ZERO);
+            OnResize();
         else
         {
             horizontalScrollBar_->SetVisible(true);
@@ -519,13 +519,13 @@ void ScrollView::HandleScrollBarVisibleChanged(StringHash eventType, VariantMap&
 {
     // Need to recalculate panel size when scrollbar visibility changes
     if (!ignoreEvents_)
-        OnResize(GetSize(), IntVector2::ZERO);
+        OnResize();
 }
 
 void ScrollView::HandleElementResized(StringHash eventType, VariantMap& eventData)
 {
     if (!ignoreEvents_)
-        OnResize(GetSize(), IntVector2::ZERO);
+        OnResize();
 }
 
 void ScrollView::HandleTouchMove(StringHash eventType, VariantMap& eventData)

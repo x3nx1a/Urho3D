@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2017 the Urho3D project.
+// Copyright (c) 2008-2016 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -300,7 +300,8 @@ void TileMapLayer2D::SetTileLayer(const TmxTileLayer2D* tileLayer)
             if (!tile)
                 continue;
 
-            SharedPtr<Node> tileNode(GetNode()->CreateTemporaryChild("Tile"));
+            SharedPtr<Node> tileNode(GetNode()->CreateChild("Tile"));
+            tileNode->SetTemporary(true);
             tileNode->SetPosition(info.TileIndexToPosition(x, y));
 
             StaticSprite2D* staticSprite = tileNode->CreateComponent<StaticSprite2D>();
@@ -325,7 +326,8 @@ void TileMapLayer2D::SetObjectGroup(const TmxObjectGroup2D* objectGroup)
         const TileMapObject2D* object = objectGroup->GetObject(i);
 
         // Create dummy node for all object
-        SharedPtr<Node> objectNode(GetNode()->CreateTemporaryChild("Object"));
+        SharedPtr<Node> objectNode(GetNode()->CreateChild("Object"));
+        objectNode->SetTemporary(true);
         objectNode->SetPosition(object->GetPosition());
 
         // If object is tile, create static sprite component
@@ -354,7 +356,8 @@ void TileMapLayer2D::SetImageLayer(const TmxImageLayer2D* imageLayer)
     if (!imageLayer->GetSprite())
         return;
 
-    SharedPtr<Node> imageNode(GetNode()->CreateTemporaryChild("Tile"));
+    SharedPtr<Node> imageNode(GetNode()->CreateChild("Tile"));
+    imageNode->SetTemporary(true);
     imageNode->SetPosition(imageLayer->GetPosition());
 
     StaticSprite2D* staticSprite = imageNode->CreateComponent<StaticSprite2D>();

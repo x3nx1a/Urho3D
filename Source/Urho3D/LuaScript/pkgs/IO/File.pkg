@@ -48,7 +48,6 @@ class File : public Object
     double ReadDouble();
     IntRect ReadIntRect();
     IntVector2 ReadIntVector2();
-    IntVector3 ReadIntVector3();
     Rect ReadRect();
     Vector2 ReadVector2();
     Vector3 ReadVector3();
@@ -95,7 +94,6 @@ class File : public Object
     bool WriteDouble(double value);
     bool WriteIntRect(const IntRect& value);
     bool WriteIntVector2(const IntVector2& value);
-    bool WriteIntVector3(const IntVector3& value);
     bool WriteRect(const Rect& value);
     bool WriteVector2(const Vector2& value);
     bool WriteVector3(const Vector3& value);

@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2017 the Urho3D project.
+// Copyright (c) 2008-2016 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -50,17 +50,15 @@ static const char* filterModeNames[] =
     "bilinear",
     "trilinear",
     "anisotropic",
-    "nearestanisotropic",
     "default",
     0
 };
 
 Texture::Texture(Context* context) :
-    ResourceWithMetadata(context),
+    Resource(context),
     GPUObject(GetSubsystem<Graphics>()),
     shaderResourceView_(0),
     sampler_(0),
-    resolveTexture_(0),
     format_(0),
     usage_(TEXTURE_STATIC),
     levels_(0),
@@ -70,13 +68,8 @@ Texture::Texture(Context* context) :
     depth_(0),
     shadowCompare_(false),
     filterMode_(FILTER_DEFAULT),
-    anisotropy_(0),
-    multiSample_(1),
     sRGB_(false),
-    parametersDirty_(true),
-    autoResolve_(false),
-    resolveDirty_(false),
-    levelsDirty_(false)
+    parametersDirty_(true)
 {
     for (int i = 0; i < MAX_COORDS; ++i)
         addressMode_[i] = ADDRESS_WRAP;
@@ -105,12 +98,6 @@ void Texture::SetFilterMode(TextureFilterMode mode)
 void Texture::SetAddressMode(TextureCoordinate coord, TextureAddressMode mode)
 {
     addressMode_[coord] = mode;
-    parametersDirty_ = true;
-}
-
-void Texture::SetAnisotropy(unsigned level)
-{
-    anisotropy_ = level;
     parametersDirty_ = true;
 }
 
@@ -204,8 +191,8 @@ void Texture::SetParameters(XMLFile* file)
 
 void Texture::SetParameters(const XMLElement& element)
 {
-    LoadMetadataFromXML(element);
-    for (XMLElement paramElem = element.GetChild(); paramElem; paramElem = paramElem.GetNext())
+    XMLElement paramElem = element.GetChild();
+    while (paramElem)
     {
         String name = paramElem.GetName();
 
@@ -227,8 +214,6 @@ void Texture::SetParameters(const XMLElement& element)
         {
             String mode = paramElem.GetAttributeLower("mode");
             SetFilterMode((TextureFilterMode)GetStringListIndex(mode.CString(), filterModeNames, FILTER_DEFAULT));
-            if (paramElem.HasAttribute("anisotropy"))
-                SetAnisotropy(paramElem.GetUInt("anisotropy"));
         }
 
         if (name == "mipmap")
@@ -248,18 +233,14 @@ void Texture::SetParameters(const XMLElement& element)
 
         if (name == "srgb")
             SetSRGB(paramElem.GetBool("enable"));
+
+        paramElem = paramElem.GetNext();
     }
 }
 
 void Texture::SetParametersDirty()
 {
     parametersDirty_ = true;
-}
-
-void Texture::SetLevelsDirty()
-{
-    if (usage_ == TEXTURE_RENDERTARGET && levels_ > 1)
-        levelsDirty_ = true;
 }
 
 unsigned Texture::CheckMaxLevels(int width, int height, unsigned requestedLevels)

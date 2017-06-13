@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2017 the Urho3D project.
+// Copyright (c) 2008-2016 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -65,11 +65,7 @@ void ConstraintMotor2D::SetLinearOffset(const Vector2& linearOffset)
 
     linearOffset_ = linearOffset;
 
-    if (joint_)
-        static_cast<b2MotorJoint*>(joint_)->SetLinearOffset(ToB2Vec2(linearOffset));
-    else
-        RecreateJoint();
-
+    RecreateJoint();
     MarkNetworkUpdate();
 }
 
@@ -80,11 +76,7 @@ void ConstraintMotor2D::SetAngularOffset(float angularOffset)
 
     jointDef_.angularOffset = angularOffset;
 
-    if (joint_)
-        static_cast<b2MotorJoint*>(joint_)->SetAngularOffset(angularOffset);
-    else
-        RecreateJoint();
-
+    RecreateJoint();
     MarkNetworkUpdate();
 }
 
@@ -95,11 +87,7 @@ void ConstraintMotor2D::SetMaxForce(float maxForce)
 
     jointDef_.maxForce = maxForce;
 
-    if (joint_)
-        static_cast<b2MotorJoint*>(joint_)->SetMaxForce(maxForce);
-    else
-        RecreateJoint();
-
+    RecreateJoint();
     MarkNetworkUpdate();
 }
 
@@ -110,11 +98,7 @@ void ConstraintMotor2D::SetMaxTorque(float maxTorque)
 
     jointDef_.maxTorque = maxTorque;
 
-    if (joint_)
-        static_cast<b2MotorJoint*>(joint_)->SetMaxTorque(maxTorque);
-    else
-        RecreateJoint();
-
+    RecreateJoint();
     MarkNetworkUpdate();
 }
 
@@ -125,11 +109,7 @@ void ConstraintMotor2D::SetCorrectionFactor(float correctionFactor)
 
     jointDef_.correctionFactor = correctionFactor;
 
-    if (joint_)
-        static_cast<b2MotorJoint*>(joint_)->SetCorrectionFactor(correctionFactor);
-    else
-        RecreateJoint();
-
+    RecreateJoint();
     MarkNetworkUpdate();
 }
 

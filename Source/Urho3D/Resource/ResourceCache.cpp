@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2017 the Urho3D project.
+// Copyright (c) 2008-2016 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -784,6 +784,8 @@ unsigned long long ResourceCache::GetTotalMemoryUse() const
 
 String ResourceCache::GetResourceFileName(const String& name) const
 {
+    MutexLock lock(resourceMutex_);
+
     FileSystem* fileSystem = GetSubsystem<FileSystem>();
     for (unsigned i = 0; i < resourceDirs_.Size(); ++i)
     {
@@ -791,10 +793,7 @@ String ResourceCache::GetResourceFileName(const String& name) const
             return resourceDirs_[i] + name;
     }
 
-    if (IsAbsolutePath(name) && fileSystem->FileExists(name))
-        return name;
-    else
-        return String();
+    return String();
 }
 
 ResourceRouter* ResourceCache::GetResourceRouter(unsigned index) const
@@ -850,7 +849,7 @@ String ResourceCache::SanitateResourceName(const String& nameIn) const
     if (resourceDirs_.Size())
     {
         String namePath = GetPath(name);
-        String exePath = fileSystem->GetProgramDir().Replaced("/./", "/");
+        String exePath = fileSystem->GetProgramDir();
         for (unsigned i = 0; i < resourceDirs_.Size(); ++i)
         {
             String relativeResourcePath = resourceDirs_[i];

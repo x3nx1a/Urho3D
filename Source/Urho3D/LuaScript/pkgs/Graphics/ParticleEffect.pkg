@@ -164,7 +164,11 @@ static ParticleEffect* ParticleEffectClone(const ParticleEffect* effect, const S
 {
     if (!effect)
         return 0;
-
-    return effect->Clone(cloneName).Detach();
+        
+    SharedPtr<ParticleEffect> clonedEffectPtr = effect->Clone(cloneName);
+    ParticleEffect* clonedEffect = clonedEffectPtr.Get();
+    clonedEffectPtr.Detach();
+    
+    return clonedEffect;
 }
 $}

@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2017 the Urho3D project.
+// Copyright (c) 2008-2016 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -127,14 +127,6 @@ template <class T> void RegisterStaticSprite2D(asIScriptEngine* engine, const ch
     engine->RegisterObjectMethod(className, "const Vector2& get_hotSpot() const", asMETHOD(T, GetHotSpot), asCALL_THISCALL);
     engine->RegisterObjectMethod(className, "void set_customMaterial(Material@+)", asMETHOD(T, SetCustomMaterial), asCALL_THISCALL);
     engine->RegisterObjectMethod(className, "Material@+ get_customMaterial() const", asMETHOD(T, GetCustomMaterial), asCALL_THISCALL);
-    engine->RegisterObjectMethod(className, "void set_useDrawRect(bool)", asMETHOD(T, SetUseDrawRect), asCALL_THISCALL);
-    engine->RegisterObjectMethod(className, "bool get_useDrawRect() const", asMETHOD(T, GetUseDrawRect), asCALL_THISCALL);
-    engine->RegisterObjectMethod(className, "void set_useTextureRect(bool)", asMETHOD(T, SetUseTextureRect), asCALL_THISCALL);
-    engine->RegisterObjectMethod(className, "bool get_useTextureRect() const", asMETHOD(T, GetUseTextureRect), asCALL_THISCALL);
-    engine->RegisterObjectMethod(className, "void set_drawRect(const Rect&)", asMETHOD(T, SetDrawRect), asCALL_THISCALL);
-    engine->RegisterObjectMethod(className, "const Rect& get_drawRect() const", asMETHOD(T, GetDrawRect), asCALL_THISCALL);
-    engine->RegisterObjectMethod(className, "void set_textureRect(const Rect&)", asMETHOD(T, SetTextureRect), asCALL_THISCALL);
-    engine->RegisterObjectMethod(className, "const Rect& get_textureRect() const", asMETHOD(T, GetTextureRect), asCALL_THISCALL);
 }
 
 static void RegisterStaticSprite2D(asIScriptEngine* engine)
@@ -346,7 +338,6 @@ static void RegisterRigidBody2D(asIScriptEngine* engine)
     engine->RegisterObjectMethod("RigidBody2D", "void ApplyForceToCenter(const Vector2&in, bool)", asMETHOD(RigidBody2D, ApplyForceToCenter), asCALL_THISCALL);
     engine->RegisterObjectMethod("RigidBody2D", "void ApplyTorque(float torque, bool)", asMETHOD(RigidBody2D, ApplyTorque), asCALL_THISCALL);
     engine->RegisterObjectMethod("RigidBody2D", "void ApplyLinearImpulse(const Vector2&in, const Vector2&in, bool)", asMETHOD(RigidBody2D, ApplyLinearImpulse), asCALL_THISCALL);
-    engine->RegisterObjectMethod("RigidBody2D", "void ApplyLinearImpulseToCenter(const Vector2&in, bool)", asMETHOD(RigidBody2D, ApplyLinearImpulseToCenter), asCALL_THISCALL);
     engine->RegisterObjectMethod("RigidBody2D", "void ApplyAngularImpulse(float, bool)", asMETHOD(RigidBody2D, ApplyAngularImpulse), asCALL_THISCALL);
 }
 
@@ -586,8 +577,6 @@ static void RegisterConstraintDistance2D(asIScriptEngine* engine)
     engine->RegisterObjectMethod("ConstraintDistance2D", "float get_frequencyHz() const", asMETHOD(ConstraintDistance2D, GetFrequencyHz), asCALL_THISCALL);
     engine->RegisterObjectMethod("ConstraintDistance2D", "void set_dampingRatio(float)", asMETHOD(ConstraintDistance2D, SetDampingRatio), asCALL_THISCALL);
     engine->RegisterObjectMethod("ConstraintDistance2D", "float get_dampingRatio() const", asMETHOD(ConstraintDistance2D, GetDampingRatio), asCALL_THISCALL);
-    engine->RegisterObjectMethod("ConstraintDistance2D", "void set_length(float)", asMETHOD(ConstraintDistance2D, SetLength), asCALL_THISCALL);
-    engine->RegisterObjectMethod("ConstraintDistance2D", "float get_length() const", asMETHOD(ConstraintDistance2D, GetLength), asCALL_THISCALL);
 }
 
 static void RegisterConstraintFriction2D(asIScriptEngine* engine)

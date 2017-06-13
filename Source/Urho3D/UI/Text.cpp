@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2017 the Urho3D project.
+// Copyright (c) 2008-2016 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -254,7 +254,7 @@ void Text::GetBatches(PODVector<UIBatch>& batches, PODVector<float>& vertexData,
     hovering_ = false;
 }
 
-void Text::OnResize(const IntVector2& newSize, const IntVector2& delta)
+void Text::OnResize()
 {
     if (wordWrap_)
         UpdateText(true);
@@ -748,9 +748,6 @@ void Text::UpdateCharLocations()
             x = GetRowStartPosition(++rowIndex);
             y += rowHeight;
         }
-
-        if (lastFilled > printToText_[i])
-            lastFilled = printToText_[i];
 
         // Fill gaps in case characters were skipped from printing
         for (unsigned j = lastFilled; j <= printToText_[i]; ++j)

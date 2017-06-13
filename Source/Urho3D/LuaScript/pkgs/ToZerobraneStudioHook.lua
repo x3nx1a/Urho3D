@@ -1,5 +1,5 @@
 --
--- Copyright (c) 2008-2017 the Urho3D project.
+-- Copyright (c) 2008-2016 the Urho3D project.
 --
 -- Permission is hereby granted, free of charge, to any person obtaining a copy
 -- of this software and associated documentation files (the "Software"), to deal
@@ -95,15 +95,15 @@ function writeFunctionArgs(file, declarations)
   for i = 1, count do
     local declaration = declarations[i]
     if declaration.type ~= "void" then
-      -- add parameter type
+      -- add paramter type
       local param_str = declaration.type
       -- add pointer or reference
       if declaration.ptr ~= "" then
         param_str = param_str .. declaration.ptr
       end
-      -- add parameter name
+      -- add paramter name
       param_str = param_str .. " " .. declaration.name
-      -- add parameter default value
+      -- add paramter default value
       if declaration.def ~= "" then
         param_str = param_str .. " = " .. declaration.def
       end

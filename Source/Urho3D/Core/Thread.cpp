@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2017 the Urho3D project.
+// Copyright (c) 2008-2016 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -38,7 +38,7 @@ namespace Urho3D
 #ifdef URHO3D_THREADING
 #ifdef _WIN32
 
-static DWORD WINAPI ThreadFunctionStatic(void* data)
+DWORD WINAPI ThreadFunctionStatic(void* data)
 {
     Thread* thread = static_cast<Thread*>(data);
     thread->ThreadFunction();
@@ -47,7 +47,7 @@ static DWORD WINAPI ThreadFunctionStatic(void* data)
 
 #else
 
-static void* ThreadFunctionStatic(void* data)
+void* ThreadFunctionStatic(void* data)
 {
     Thread* thread = static_cast<Thread*>(data);
     thread->ThreadFunction();
@@ -56,7 +56,7 @@ static void* ThreadFunctionStatic(void* data)
 }
 
 #endif
-#endif // URHO3D_THREADING
+#endif
 
 ThreadID Thread::mainThreadID;
 
@@ -91,7 +91,7 @@ bool Thread::Run()
     return handle_ != 0;
 #else
     return false;
-#endif // URHO3D_THREADING
+#endif
 }
 
 void Thread::Stop()
@@ -112,7 +112,7 @@ void Thread::Stop()
     delete thread;
 #endif
     handle_ = 0;
-#endif // URHO3D_THREADING
+#endif
 }
 
 void Thread::SetPriority(int priority)
@@ -121,12 +121,13 @@ void Thread::SetPriority(int priority)
 #ifdef _WIN32
     if (handle_)
         SetThreadPriority((HANDLE)handle_, priority);
-#elif defined(__linux__) && !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
+#endif
+#if defined(__linux__) && !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
     pthread_t* thread = (pthread_t*)handle_;
     if (thread)
         pthread_setschedprio(*thread, priority);
 #endif
-#endif // URHO3D_THREADING
+#endif
 }
 
 void Thread::SetMainThread()
@@ -136,15 +137,11 @@ void Thread::SetMainThread()
 
 ThreadID Thread::GetCurrentThreadID()
 {
-#ifdef URHO3D_THREADING
 #ifdef _WIN32
     return GetCurrentThreadId();
 #else
     return pthread_self();
 #endif
-#else
-    return ThreadID();
-#endif // URHO3D_THREADING
 }
 
 bool Thread::IsMainThread()
@@ -153,7 +150,7 @@ bool Thread::IsMainThread()
     return GetCurrentThreadID() == mainThreadID;
 #else
     return true;
-#endif // URHO3D_THREADING
+#endif
 }
 
 }

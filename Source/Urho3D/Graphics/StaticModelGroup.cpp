@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2017 the Urho3D project.
+// Copyright (c) 2008-2016 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -40,16 +40,8 @@ namespace Urho3D
 
 extern const char* GEOMETRY_CATEGORY;
 
-const char* instanceNodesStructureElementNames[] =
-{
-    "Instance Count",
-    "   NodeID",
-    0
-};
-
 StaticModelGroup::StaticModelGroup(Context* context) :
     StaticModel(context),
-    nodesDirty_(false),
     nodeIDsDirty_(false)
 {
     // Initialize the default node IDs attribute
@@ -65,17 +57,17 @@ void StaticModelGroup::RegisterObject(Context* context)
     context->RegisterFactory<StaticModelGroup>(GEOMETRY_CATEGORY);
 
     URHO3D_COPY_BASE_ATTRIBUTES(StaticModel);
-    URHO3D_ACCESSOR_VARIANT_VECTOR_STRUCTURE_ATTRIBUTE("Instance Nodes", GetNodeIDsAttr, SetNodeIDsAttr,
-                                                       VariantVector, Variant::emptyVariantVector, instanceNodesStructureElementNames,
-                                                       AM_DEFAULT | AM_NODEIDVECTOR);
+    URHO3D_ACCESSOR_ATTRIBUTE("Instance Nodes", GetNodeIDsAttr, SetNodeIDsAttr, VariantVector, Variant::emptyVariantVector,
+        AM_DEFAULT | AM_NODEIDVECTOR);
 }
 
 void StaticModelGroup::ApplyAttributes()
 {
-    if (!nodesDirty_)
+    if (!nodeIDsDirty_)
         return;
 
-    // Remove all old instance nodes before searching for new
+    // Remove all old instance nodes before searching for new. Can not call RemoveAllInstances() as that would modify
+    // the ID list on its own
     for (unsigned i = 0; i < instanceNodes_.Size(); ++i)
     {
         Node* node = instanceNodes_[i];
@@ -86,6 +78,7 @@ void StaticModelGroup::ApplyAttributes()
     instanceNodes_.Clear();
 
     Scene* scene = GetScene();
+
     if (scene)
     {
         // The first index stores the number of IDs redundantly. This is for editing
@@ -102,9 +95,7 @@ void StaticModelGroup::ApplyAttributes()
     }
 
     worldTransforms_.Resize(instanceNodes_.Size());
-    numWorldTransforms_ = 0; // Correct amount will be found during world bounding box update
-    nodesDirty_ = false;
-
+    nodeIDsDirty_ = false;
     OnMarkedDirty(GetNode());
 }
 
@@ -287,7 +278,10 @@ void StaticModelGroup::AddInstanceNode(Node* node)
     // Add as a listener for the instance node, so that we know to dirty the transforms when the node moves or is enabled/disabled
     node->AddListener(this);
     instanceNodes_.Push(instanceWeak);
-    UpdateNumTransforms();
+
+    UpdateNodeIDs();
+    OnMarkedDirty(GetNode());
+    MarkNetworkUpdate();
 }
 
 void StaticModelGroup::RemoveInstanceNode(Node* node)
@@ -296,13 +290,12 @@ void StaticModelGroup::RemoveInstanceNode(Node* node)
         return;
 
     WeakPtr<Node> instanceWeak(node);
-    Vector<WeakPtr<Node> >::Iterator i = instanceNodes_.Find(instanceWeak);
-    if (i == instanceNodes_.End())
-        return;
-
     node->RemoveListener(this);
-    instanceNodes_.Erase(i);
-    UpdateNumTransforms();
+    instanceNodes_.Remove(instanceWeak);
+
+    UpdateNodeIDs();
+    OnMarkedDirty(GetNode());
+    MarkNetworkUpdate();
 }
 
 void StaticModelGroup::RemoveAllInstanceNodes()
@@ -315,7 +308,10 @@ void StaticModelGroup::RemoveAllInstanceNodes()
     }
 
     instanceNodes_.Clear();
-    UpdateNumTransforms();
+
+    UpdateNodeIDs();
+    OnMarkedDirty(GetNode());
+    MarkNetworkUpdate();
 }
 
 Node* StaticModelGroup::GetInstanceNode(unsigned index) const
@@ -352,17 +348,7 @@ void StaticModelGroup::SetNodeIDsAttr(const VariantVector& value)
         nodeIDsAttr_.Clear();
         nodeIDsAttr_.Push(0);
     }
-
-    nodesDirty_ = true;
-    nodeIDsDirty_ = false;
-}
-
-const VariantVector& StaticModelGroup::GetNodeIDsAttr() const
-{
-    if (nodeIDsDirty_)
-        UpdateNodeIDs();
-
-    return nodeIDsAttr_;
+    nodeIDsDirty_ = true;
 }
 
 void StaticModelGroup::OnNodeSetEnabled(Node* node)
@@ -395,30 +381,20 @@ void StaticModelGroup::OnWorldBoundingBoxUpdate()
     numWorldTransforms_ = index;
 }
 
-void StaticModelGroup::UpdateNumTransforms()
-{
-    worldTransforms_.Resize(instanceNodes_.Size());
-    numWorldTransforms_ = 0; // Correct amount will be during world bounding box update
-    nodeIDsDirty_ = true;
-
-    OnMarkedDirty(GetNode());
-    MarkNetworkUpdate();
-}
-
-void StaticModelGroup::UpdateNodeIDs() const
+void StaticModelGroup::UpdateNodeIDs()
 {
     unsigned numInstances = instanceNodes_.Size();
 
     nodeIDsAttr_.Clear();
     nodeIDsAttr_.Push(numInstances);
+    worldTransforms_.Resize(numInstances);
+    numWorldTransforms_ = 0; // For safety. OnWorldBoundingBoxUpdate() will calculate the proper amount
 
     for (unsigned i = 0; i < numInstances; ++i)
     {
         Node* node = instanceNodes_[i];
         nodeIDsAttr_.Push(node ? node->GetID() : 0);
     }
-
-    nodeIDsDirty_ = false;
 }
 
 }

@@ -8,7 +8,7 @@ class Graphics : public Object
     void SetWindowPosition(const IntVector2& position);
     void SetWindowPosition(int x, int y);
 
-    bool SetMode(int width, int height, bool fullscreen, bool borderless, bool resizable, bool highDPI, bool vsync, bool tripleBuffer, int multiSample, int monitor, int refreshRate);
+    bool SetMode(int width, int height, bool fullscreen, bool borderless, bool resizable, bool highDPI, bool vsync, bool tripleBuffer, int multiSample);
     bool SetMode(int width, int height);
 
     void SetSRGB(bool enable);
@@ -24,7 +24,6 @@ class Graphics : public Object
     void EndDumpShaders();
     void PrecacheShaders(Deserializer& source);
     tolua_outside void GraphicsPrecacheShaders @ PrecacheShaders(const String fileName);
-    void SetShaderCacheDir(const String path);
 
     bool IsInitialized() const;
     void* GetExternalWindow() const;
@@ -34,13 +33,10 @@ class Graphics : public Object
     int GetWidth() const;
     int GetHeight() const;
     int GetMultiSample() const;
-    IntVector2 GetSize() const;
     bool GetFullscreen() const;
     bool GetResizable() const;
     bool GetBorderless() const;
     bool GetVSync() const;
-    int GetMonitor() const;
-    int GetRefreshRate() const;
     bool GetTripleBuffer() const;
     bool GetSRGB() const;
     bool GetDither() const;
@@ -59,9 +55,7 @@ class Graphics : public Object
     bool GetReadableDepthSupport() const;
     bool GetSRGBSupport() const;
     bool GetSRGBWriteSupport() const;
-    IntVector2 GetDesktopResolution(int monitor) const;
-    int GetMonitorCount() const;
-    const String GetShaderCacheDir() const;
+    IntVector2 GetDesktopResolution() const;
 
     static unsigned GetAlphaFormat();
     static unsigned GetLuminanceFormat();
@@ -89,13 +83,10 @@ class Graphics : public Object
     tolua_readonly tolua_property__get_set int width;
     tolua_readonly tolua_property__get_set int height;
     tolua_readonly tolua_property__get_set int multiSample;
-    tolua_readonly tolua_property__get_set IntVector2 size;
     tolua_readonly tolua_property__get_set bool fullscreen;
     tolua_readonly tolua_property__get_set bool resizable;
     tolua_readonly tolua_property__get_set bool borderless;
     tolua_readonly tolua_property__get_set bool vSync;
-    tolua_readonly tolua_property__get_set int refreshRate;
-    tolua_readonly tolua_property__get_set int monitor;
     tolua_readonly tolua_property__get_set bool tripleBuffer;
     tolua_property__get_set bool sRGB;
     tolua_property__get_set bool dither;
@@ -114,8 +105,7 @@ class Graphics : public Object
     tolua_readonly tolua_property__get_set bool readableDepthSupport;
     tolua_readonly tolua_property__get_set bool sRGBSupport;
     tolua_readonly tolua_property__get_set bool sRGBWriteSupport;
-    tolua_readonly tolua_property__get_set int monitorCount;
-    tolua_property__get_set String shaderCacheDir;
+    tolua_readonly tolua_property__get_set IntVector2 desktopResolution;
 };
 
 Graphics* GetGraphics();

@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2017 the Urho3D project.
+// Copyright (c) 2008-2016 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -153,10 +153,10 @@ public:
     PhysicsWorld* GetPhysicsWorld() const { return physicsWorld_; }
 
     /// Return Bullet rigid body.
-    btRigidBody* GetBody() const { return body_.Get(); }
+    btRigidBody* GetBody() const { return body_; }
 
     /// Return Bullet compound collision shape.
-    btCompoundShape* GetCompoundShape() const { return compoundShape_.Get(); }
+    btCompoundShape* GetCompoundShape() const { return compoundShape_; }
 
     /// Return mass.
     float GetMass() const { return mass_; }
@@ -264,11 +264,11 @@ private:
     void HandleTargetRotation(StringHash eventType, VariantMap& eventData);
 
     /// Bullet rigid body.
-    UniquePtr<btRigidBody> body_;
+    btRigidBody* body_;
     /// Bullet compound collision shape.
-    UniquePtr<btCompoundShape> compoundShape_;
+    btCompoundShape* compoundShape_;
     /// Compound collision shape with center of mass offset applied.
-    UniquePtr<btCompoundShape> shiftedCompoundShape_;
+    btCompoundShape* shiftedCompoundShape_;
     /// Physics world.
     WeakPtr<PhysicsWorld> physicsWorld_;
     /// Smoothed transform, if has one.

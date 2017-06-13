@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2017 the Urho3D project.
+// Copyright (c) 2008-2016 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -77,11 +77,7 @@ void ConstraintRevolute2D::SetEnableLimit(bool enableLimit)
 
     jointDef_.enableLimit = enableLimit;
 
-    if (joint_)
-        static_cast<b2RevoluteJoint*>(joint_)->EnableLimit(enableLimit);
-    else
-        RecreateJoint();
-
+    RecreateJoint();
     MarkNetworkUpdate();
 }
 
@@ -92,11 +88,7 @@ void ConstraintRevolute2D::SetLowerAngle(float lowerAngle)
 
     jointDef_.lowerAngle = lowerAngle;
 
-    if (joint_)
-        static_cast<b2RevoluteJoint*>(joint_)->SetLimits(lowerAngle, jointDef_.upperAngle);
-    else
-        RecreateJoint();
-
+    RecreateJoint();
     MarkNetworkUpdate();
 }
 
@@ -107,11 +99,7 @@ void ConstraintRevolute2D::SetUpperAngle(float upperAngle)
 
     jointDef_.upperAngle = upperAngle;
 
-    if (joint_)
-        static_cast<b2RevoluteJoint*>(joint_)->SetLimits(jointDef_.lowerAngle, upperAngle);
-    else
-        RecreateJoint();
-
+    RecreateJoint();
     MarkNetworkUpdate();
 }
 
@@ -122,11 +110,7 @@ void ConstraintRevolute2D::SetEnableMotor(bool enableMotor)
 
     jointDef_.enableMotor = enableMotor;
 
-    if (joint_)
-        static_cast<b2RevoluteJoint*>(joint_)->EnableMotor(enableMotor);
-    else
-        RecreateJoint();
-
+    RecreateJoint();
     MarkNetworkUpdate();
 }
 
@@ -137,11 +121,7 @@ void ConstraintRevolute2D::SetMotorSpeed(float motorSpeed)
 
     jointDef_.motorSpeed = motorSpeed;
 
-    if (joint_)
-        static_cast<b2RevoluteJoint*>(joint_)->SetMotorSpeed(motorSpeed);
-    else
-        RecreateJoint();
-
+    RecreateJoint();
     MarkNetworkUpdate();
 }
 
@@ -152,11 +132,7 @@ void ConstraintRevolute2D::SetMaxMotorTorque(float maxMotorTorque)
 
     jointDef_.maxMotorTorque = maxMotorTorque;
 
-    if (joint_)
-        static_cast<b2RevoluteJoint*>(joint_)->SetMaxMotorTorque(maxMotorTorque);
-    else
-        RecreateJoint();
-
+    RecreateJoint();
     MarkNetworkUpdate();
 }
 

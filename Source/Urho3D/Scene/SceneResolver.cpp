@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2017 the Urho3D project.
+// Copyright (c) 2008-2016 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -118,8 +118,7 @@ void SceneResolver::Resolve()
             else if (info.mode_ & AM_NODEIDVECTOR)
             {
                 hasIDAttributes = true;
-                Variant attrValue = component->GetAttribute(j);
-                const VariantVector& oldNodeIDs = attrValue.GetVariantVector();
+                const VariantVector& oldNodeIDs = component->GetAttribute(j).GetVariantVector();
 
                 if (oldNodeIDs.Size())
                 {

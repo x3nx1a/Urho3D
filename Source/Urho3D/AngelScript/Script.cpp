@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2017 the Urho3D project.
+// Copyright (c) 2008-2016 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -125,9 +125,6 @@ Script::Script(Context* context) :
 #endif
 #ifdef URHO3D_DATABASE
     RegisterDatabaseAPI(scriptEngine_);
-#endif
-#ifdef URHO3D_IK
-    RegisterIKAPI(scriptEngine_);
 #endif
 #ifdef URHO3D_PHYSICS
     RegisterPhysicsAPI(scriptEngine_);
@@ -300,13 +297,13 @@ void Script::ClearObjectTypeCache()
     objectTypes_.Clear();
 }
 
-asITypeInfo* Script::GetObjectType(const char* declaration)
+asIObjectType* Script::GetObjectType(const char* declaration)
 {
-    HashMap<const char*, asITypeInfo*>::ConstIterator i = objectTypes_.Find(declaration);
+    HashMap<const char*, asIObjectType*>::ConstIterator i = objectTypes_.Find(declaration);
     if (i != objectTypes_.End())
         return i->second_;
 
-    asITypeInfo* type = scriptEngine_->GetTypeInfoById(scriptEngine_->GetTypeIdByDecl(declaration));
+    asIObjectType* type = scriptEngine_->GetObjectTypeById(scriptEngine_->GetTypeIdByDecl(declaration));
     objectTypes_[declaration] = type;
     return type;
 }

@@ -72,6 +72,10 @@ static HttpRequest* NetworkMakeHttpRequest(Network* network, const String& url, 
     if (!network)
         return 0;
 
-    return network->MakeHttpRequest(url, verb, headers, postData).Detach();
+    SharedPtr<HttpRequest> httpRequestPtr = network->MakeHttpRequest(url, verb, headers, postData);
+    HttpRequest* httpRequest = httpRequestPtr.Get();
+    httpRequestPtr.Detach();
+
+    return httpRequest;
 }
 $}
