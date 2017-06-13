@@ -288,5 +288,4 @@ protected:
 private:
 
 };
-~~~
-
+~~~~
