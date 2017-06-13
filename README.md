@@ -1,233 +1,292 @@
 ![Urho3D logo](https://raw.githubusercontent.com/urho3d/Urho3D/master/bin/Data/Textures/LogoLarge.png)
 
-# Urho3D
+# Urho3D ImGui
 
-[![Coverity Scan Build Status](https://scan.coverity.com/projects/4954/badge.svg)](https://scan.coverity.com/projects/urho3d-urho3d)
-[![Join the chat at https://gitter.im/urho3d/Urho3D](https://badges.gitter.im/urho3d/Urho3D.svg)](https://gitter.im/urho3d/Urho3D?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+# Usage
+HelloIMUI.cpp
+~~~~
+#include <Urho3D/Core/CoreEvents.h>
+#include <Urho3D/Input/Input.h>
+#include <Urho3D/Resource/ResourceCache.h>
+#include <Urho3D/Resource/XMLFile.h>
+#include <Urho3D/IMUI/IMUI.h>
+#include <Urho3D/IO/Log.h>
+#include "HelloIMUI.h"
 
-**Urho3D** is a free lightweight, cross-platform 2D and 3D game engine implemented in C++ and released under the MIT license. Greatly inspired by OGRE and Horde3D.
+#include <imgui/imgui.h>
+#include <Urho3D/IMUI/IMUISettings.h>
 
-Main website: [https://urho3d.github.io/](https://urho3d.github.io/)
+#include <Urho3D/DebugNew.h>
 
-## License
-Licensed under the MIT license, see [LICENSE](https://github.com/urho3d/Urho3D/blob/master/LICENSE) for details.
+URHO3D_DEFINE_APPLICATION_MAIN(HelloIMUI)
 
-## Contributing
-Before making pull requests, please read the [Contribution checklist](https://urho3d.github.io/documentation/HEAD/_contribution_checklist.html) and [Coding conventions](https://urho3d.github.io/documentation/HEAD/_coding_conventions.html) pages from the documentation.
+HelloIMUI::HelloIMUI(Context* context) :
+    Sample(context)
 
-## Credits
-Urho3D development, contributions and bugfixes by:
-- Lasse Öörni
-- Wei Tjong Yao
-- Aster Jian
-- Ricardo Abreu
-- Vivienne Anthony
-- Colin Barrett
-- Erik Beran
-- Gauthier Billot
-- Loic Blot
-- Danny Boisvert
-- Sergey Bosko
-- Lisandro Bruzzo
-- Carlo Carollo
-- Pete Chown
-- Christian Clavet
-- Sebastian Delatorre (primitivewaste)
-- Josh Engebretson
-- Simon Flores
-- Manuel Freiberger
-- Chris Friesen
-- Alex Fuller
-- Henrik Heino
-- Mika Heinonen
-- Victor Holt
-- Johnathan Jenkins
-- Jukka Jylänki
-- Graham King
-- Jason Kinzer
-- Cameron Kline
-- Jan Korous
-- Eugene Kozlov
-- Gunnar Kriik
-- Aliaksandr Kryvashein
-- Artem Kulyk
-- Rokas Kupstys
-- Ali Kämäräinen
-- Sergey Lapin
-- Pete Leigh
-- Pengfei Li
-- Arnis Lielturks
-- Frode 'Modanung' Lindeijer
-- Thorbjørn Lindeijer
-- Nathanial Lydick
-- Xavier Maupeu
-- Iain Merrick
-- Jonne Nauha
-- Huy Nguyen
-- Paul Noome
-- David Palacios
-- Alex Parlett
-- Jordan Patterson
-- Anton Petrov
-- Vladimir Pobedinsky
-- Franck Poulain
-- Pranjal Raihan
-- Svyatoslav Razmyslov
-- Mariusz Richtscheid
-- Nick Royer
-- Jonathan Sandusky
-- Miika Santala
-- Anatoly Sennov
-- Matan Shukry
-- Bengt Soderstrom
-- Hualin Song
-- James Thomas
-- Joshua Tippetts
-- Konstantin Tomashevich
-- Yusuf Umar
-- Mateus Vendramini
-- Daniel Wiberg
-- Steven Zhang
-- AGreatFish
-- BlueMagnificent
-- CG-SS
-- Enhex
-- Fastran
-- Firegorilla
-- Gordon-F
-- Lumak
-- Magic.Lixin
-- Mike3D
-- MonkeyFirst
-- Ner'zhul
-- Newb I the Newbd
-- OvermindDL1
-- PredatorMF
-- Scellow
-- Skrylar
-- TheComet93
-- Y-way
-- 1vanK
-- andmar1x
-- amadeus_osa
-- atship
-- att
-- celeron55
-- cosmy1
-- damu
-- dragonCASTjosh
-- feltech
-- fredakilla
-- gleblebedev
-- hdunderscore
-- lhinuz
-- lvshiling
-- marynate
-- meshonline
-- mightyCelu
-- neat3d
-- nemerle
-- ninjastone
-- orefkov
-- proller
-- raould
-- rasteron
-- reattiva
-- rifai
-- rikorin
-- skaiware
-- ssinai1
-- svifylabs
-- szamq
-- thebluefish
-- tommy3
-- yushli
+{
+}
 
-Urho3D is greatly inspired by OGRE (http://www.ogre3d.org) and Horde3D
-(http://www.horde3d.org). Additional inspiration & research used:
-- Rectangle packing by Jukka Jylänki (clb)
-  http://clb.demon.fi/projects/rectangle-bin-packing
-- Tangent generation from Terathon
-  http://www.terathon.com/code/tangent.html
-- Fast, Minimum Storage Ray/Triangle Intersection by Möller & Trumbore
-  http://www.graphics.cornell.edu/pubs/1997/MT97.pdf
-- Linear-Speed Vertex Cache Optimisation by Tom Forsyth
-  http://home.comcast.net/~tom_forsyth/papers/fast_vert_cache_opt.html
-- Software rasterization of triangles based on Chris Hecker's
-  Perspective Texture Mapping series in the Game Developer magazine
-  http://chrishecker.com/Miscellaneous_Technical_Articles
-- Networked Physics by Glenn Fiedler
-  http://gafferongames.com/game-physics/networked-physics/
-- Euler Angle Formulas by David Eberly
-  https://www.geometrictools.com/Documentation/EulerAngles.pdf
-- Red Black Trees by Julienne Walker
-  http://eternallyconfuzzled.com/tuts/datastructures/jsw_tut_rbtree.aspx
-- Comparison of several sorting algorithms by Juha Nieminen
-  http://warp.povusers.org/SortComparison/
+void HelloIMUI::Setup()
+{
+	// Modify engine startup parameters
+	engineParameters_["WindowTitle"] = GetTypeName();
+	engineParameters_["LogName"] = GetTypeName() + ".log";
+	engineParameters_["FullScreen"] = false;
+	engineParameters_["Headless"] = false;
+	engineParameters_["Sound"] = false;
+	engineParameters_["UseIMUI"] = true; // if false does not create IMUI subsystem, default true.
+	engineParameters_["IMUIConfig"] = "ImUIConfig.xml"; // location of the IMUI config xml file.
+}
 
-Urho3D uses the following third-party libraries:
-- AngelScript 2.31.2 (http://www.angelcode.com/angelscript)
-- Boost 1.64.0 (http://www.boost.org) - only used for AngelScript generic bindings
-- Box2D 2.3.2 WIP (http://box2d.org)
-- Bullet 2.86.1 (http://www.bulletphysics.org)
-- Civetweb 1.7 (https://github.com/civetweb/civetweb)
-- FreeType 2.7.1 (https://www.freetype.org)
-- GLEW 1.13.0 (http://glew.sourceforge.net)
-- jo_jpeg 1.52 (http://www.jonolick.com/uploads/7/9/2/1/7921194/jo_jpeg.cpp)
-- kNet (https://github.com/juj/kNet)
-- libcpuid 0.4.0 (https://github.com/anrieff/libcpuid)
-- Lua 5.1 (https://www.lua.org)
-- LuaJIT 2.1.0+ (http://www.luajit.org)
-- LZ4 1.7.5 (https://github.com/lz4/lz4)
-- MojoShader (https://icculus.org/mojoshader)
-- Mustache 1.0 (https://mustache.github.io, https://github.com/kainjow/Mustache)
-- nanodbc 2.12.4 (https://lexicalunit.github.io/nanodbc)
-- Open Asset Import Library 3.2 (http://assimp.sourceforge.net)
-- pugixml 1.7 (http://pugixml.org)
-- rapidjson 1.1.0 (https://github.com/miloyip/rapidjson)
-- Recast/Detour (https://github.com/memononen/recastnavigation)
-- SDL 2.0.5 (https://www.libsdl.org)
-- SQLite 3.18.0 (https://www.sqlite.org)
-- StanHull (https://codesuppository.blogspot.com/2006/03/john-ratcliffs-code-suppository-blog.html)
-- stb_image 2.12 (https://nothings.org)
-- stb_image_write 1.02 (https://nothings.org)
-- stb_rect_pack 0.08 (https://nothings.org)
-- stb_vorbis 1.09 (https://nothings.org)
-- tolua++ 1.0.93 (defunct - http://www.codenix.com/~tolua)
+void HelloIMUI::Start()
+{
+    // Execute base class startup
+    Sample::Start();
 
-DXT / ETC1 / PVRTC decompression code based on the Squish library and the Oolong
-Engine.
-Jack and mushroom models from the realXtend project. (https://www.realxtend.org)
-Ninja model and terrain, water, smoke, flare and status bar textures from OGRE.
-BlueHighway font from Larabie Fonts.
-Anonymous Pro font by Mark Simonson.
-NinjaSnowWar sounds by Veli-Pekka Tätilä.
-PBR textures from Substance Share. (https://share.allegorithmic.com)
-IBL textures from HDRLab's sIBL Archive.
-Dieselpunk Moto model by allexandr007.
-Mutant & Kachujin models from Mixamo.
-License / copyright information included with the assets as necessary. All other assets (including shaders) by Urho3D authors and licensed similarly as the engine itself.
+    // Enable OS cursor
+	GetSubsystem<Input>()->SetMouseVisible(true);
+	// test touch
+	// GetSubsystem<Input>()->SetTouchEmulation(true);
 
-## Documentation
-Urho3D classes have been sparsely documented using Doxygen notation. To
-generate documentation into the "Docs" subdirectory, open the Doxyfile in the
-"Docs" subdirectory with doxywizard and click "Run doxygen" from the "Run" tab.
-Get Doxygen from http://www.doxygen.org & Graphviz from http://www.graphviz.org.
-See section "Documentation build" below on how to automate documentation
-generation as part of the build process.
+	SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(HelloIMUI, HandleUpdate));
 
-The documentation is also available online at
-  https://urho3d.github.io/documentation/HEAD/index.html
+	
+	IMUI* imui = GetSubsystem<IMUI>();
 
-Documentation on how to build Urho3D:
-  https://urho3d.github.io/documentation/HEAD/_building.html
-Documentation on how to use Urho3D as external library
-  https://urho3d.github.io/documentation/HEAD/_using_library.html
+	/// create custom imgui settings.
+	IMUISettings imuisettings;
+	
+	imuisettings.font("Fonts/Anonymous Pro.ttf",14, false);
+	imuisettings.font("Fonts/fontawesome-webfont.ttf", 14, true);
 
-Replace HEAD with a specific release version in the above links to obtain the
-documentation pertinent to the specified release. Alternatively, use the
-document-switcher in the documentation website to do so.
+	Vector<ImWchar> iconRanges;
+	iconRanges.Push(0xf000);
+	iconRanges.Push(0xf3ff);
+	iconRanges.Push(0);
+	// Basic Latin + Latin Supplement
+	Vector<ImWchar> defaultranges; 
+	defaultranges.Push(0x0020);
+	defaultranges.Push(0x00FF);
+	defaultranges.Push(0);
 
-## History
-The change history is available online at
-  https://urho3d.github.io/documentation/HEAD/_history.html
+	imuisettings.fontGlyphRanges("fontawesome-webfont", iconRanges);
+	imuisettings.fontConfig("fontawesome-webfont", true, true, true, 1, 1);
+	imuisettings.fontGlyphRanges("Anonymous Pro", defaultranges);
+	imuisettings.fontConfig("Anonymous Pro", false, false, false,3, 1);
+
+	imui->SetSettings(imuisettings);
+
+	/// Load xml imgui style.
+//	ResourceCache* cache = GetSubsystem<ResourceCache>();
+//	XMLFile* xmlfile = cache->GetResource<XMLFile>("Data/ImGuiStyle.xml");
+//	imui->LoadStyleXML(xmlfile->GetRoot());
+}
+
+void HelloIMUI::Stop()
+{
+	/// save xml imgui style.
+//	IMUI* imui = GetSubsystem<IMUI>();
+//	ResourceCache* cache = GetSubsystem<ResourceCache>();
+//	File styleSaveFile(context_, cache->GetResourceFileName("ImGuiStyle.xml"),FILE_WRITE);
+//	imui->SaveStyleXML(styleSaveFile);
+}
+
+void HelloIMUI::HandleUpdate(StringHash eventType, VariantMap& eventData)
+{
+	IMUI* imui = GetSubsystem<IMUI>();
+	
+	// check if window "hello" is collapsed, dubble clicked on the header/title
+	if (ImGui::Begin("Hello"))
+	{
+		// normal text
+		ImGui::Text("Hallo world! ...");
+		// if font icons are loaded, use u8"" to place them.
+		
+		// ImGui::Text("\uF04B"); isn't correct it is 16-bit unicode whereas ImGui takes UTF-8.
+		// so use in c++11 use u8"\uf016" or
+		ImGui::Text("\xef\x80\x96" " File"); // use string literal concatenation, ouputs a file icon and File as a string
+		ImGui::Button("test", ImVec2(100.0f, 20.0f));
+	}
+	// if Begin was called, the corresponding End must be called too !!
+	ImGui::End();
+
+	// ImGui has some tests implemented. 
+	ImGui::ShowTestWindow();
+
+
+	// hijack Test Window and add addons
+	if (ImGui::Begin("ImGui Demo"))
+	{
+		/// addons from https://github.com/Flix01/imgui but not all implemented
+		if(ImGui::CollapsingHeader("Addons"))
+		{
+			ImGui::Indent();
+			if (ImGui::CollapsingHeader("Color"))
+			{
+				static bool colorchooser = false;
+				static ImVec4 color;
+
+				ImGui::Checkbox("Color Chooser", &colorchooser);
+				ImGui::ColorChooser(&colorchooser, &color);
+				ImGui::ColorCombo("Color Combo", &color);
+
+			}
+
+			if (ImGui::CollapsingHeader("Multiline Text"))
+			{
+				static char buffer[1024] = "Code posted by Roflraging to the ImGui Issue Section (https://github.com/ocornut/imgui/issues/383).";
+				const float height = 60;
+				ImGui::Text("InputTextMultiline with horizontal scrolling:");
+				ImGui::PushID(buffer);
+				ImGui::InputTextMultilineWithHorizontalScrolling("ITMWHS", buffer, 1024, height);   // Note that now the label is not displayed ATM
+				ImGui::PopID();
+
+				ImGui::Spacing();
+				ImGui::Text("Same as above with a context-menu that should work (more or less):");
+				static char buffer2[1024] = "Code posted by Roflraging to the ImGui Issue Section (https://github.com/ocornut/imgui/issues/383).";
+				ImGui::PushID(buffer2);
+				static bool popup_open = false; static int threeStaticInts[3] = { 0,0,0 };
+				ImGui::InputTextMultilineWithHorizontalScrollingAndCopyCutPasteMenu("ITMWHS2", buffer2, 1024, height, popup_open, threeStaticInts);
+				ImGui::PopID();
+			}
+			if (ImGui::CollapsingHeader("Tabs "))
+			{
+				// Based on the code by krys-spectralpixel (https://github.com/krys-spectralpixel), posted here: https://github.com/ocornut/imgui/issues/261			
+				ImGui::Text("TabLabels (based on the code by krys-spectralpixel):");
+				static const char* tabNames[] = { "Render","Layers","Scene","World","Object","Constraints","Modifiers","Data","Material","Texture","Particle","Physics" };
+				static const int numTabs = sizeof(tabNames) / sizeof(tabNames[0]);
+				static const char* tabTooltips[numTabs] = { "Render Tab Tooltip","This tab cannot be closed with MMB","Scene Tab Tooltip","","Object Tab Tooltip","","","","","Tired to add tooltips...","" };
+				static int tabItemOrdering[numTabs] = { 0,1,2,3,4,5,6,7,8,9,10,11 };
+				static int selectedTab = 0;
+				static int optionalHoveredTab = 0;
+				static bool allowTabLabelDragAndDrop = true; static bool tabLabelWrapMode = true; static bool allowClosingTabsWithMMB = true;
+				int justClosedTabIndex = -1, justClosedTabIndexInsideTabItemOrdering = -1, oldSelectedTab = selectedTab;
+
+				ImGui::Checkbox("Wrap Mode##TabLabelWrapMode", &tabLabelWrapMode);
+				ImGui::SameLine(); ImGui::Checkbox("Drag And Drop##TabLabelDragAndDrop", &allowTabLabelDragAndDrop);
+				ImGui::SameLine(); ImGui::Checkbox("MMB closes tabs##TabLabelMMBClosing", &allowClosingTabsWithMMB);
+				ImGui::SameLine(); if (ImGui::SmallButton("Reset Tabs")) { for (int i = 0; i<numTabs; i++) tabItemOrdering[i] = i; }
+				//if (optionalHoveredTab>=0) ImGui::Text("Mouse is hovering Tab Label: \"%s\".\n\n",tabNames[optionalHoveredTab]);
+
+				/*const bool tabSelectedChanged =*/ ImGui::TabLabels(numTabs, tabNames, selectedTab, tabTooltips, tabLabelWrapMode, &optionalHoveredTab, &tabItemOrdering[0], allowTabLabelDragAndDrop, allowClosingTabsWithMMB, &justClosedTabIndex, &justClosedTabIndexInsideTabItemOrdering);
+				// Optional stuff
+				if (justClosedTabIndex == 1) {
+					tabItemOrdering[justClosedTabIndexInsideTabItemOrdering] = justClosedTabIndex;   // Prevent the user from closing Tab "Layers"
+					selectedTab = oldSelectedTab;   // This is safer, in case we had closed the selected tab
+				}
+
+				// Draw tab page
+				// tablabels uses ImGuiCol_Button for the tabs, use same color
+				ImGui::Separator(3.0f, ImGuiCol_Button); 
+				ImGui::PushID(tabNames[selectedTab]);
+				ImGui::BeginChild(tabNames[selectedTab],ImVec2(0.0f,0.0f),true);
+				ImGui::Text("Tab Page For Tab: \"%s\" here.", tabNames[selectedTab]);
+				ImGui::EndChild();
+				ImGui::PopID();
+			}
+
+			if (ImGui::CollapsingHeader("Curve Editor"))
+			{
+				ImGui::Text("Curve Editor (based on the code by https://github.com/nem0/LumixEngine):");
+				ImVec2 editor_size;
+				ImGui::CurveEditor editor = ImGui::BeginCurveEditor("Curve Editor Child");
+				if (editor.valid)
+				{
+					editor_size = ImVec2(ImGui::CalcItemWidth(), ImGui::GetItemRectSize().y);
+					static ImVec2 point1[3] = { {0.10f,0.0f},{ 0.0f,0.0f} , {.0f,.10f} };
+					static ImVec2 point2[3] = { { 0.0f,0.0f },{ 0.0f,0.0f } ,{ .0f,.10f } };
+					static ImVec2 point3[3] = { { 0.0f,0.0f },{ 0.0f,0.0f } ,{ .0f,.0f } };
+					static ImVec2 point4[3] = { { 0.10f,0.0f },{ 0.0f,0.0f } ,{ .0f,.10f } };
+					if (ImGui::CurvePoint(point1, editor))
+					{
+					//	changed = true;
+					}
+					ImGui::CurvePoint(point2, editor);
+					ImGui::CurvePoint(point3, editor);
+					ImGui::CurvePoint(point4, editor);
+					ImGui::EndCurveEditor(editor);
+				}
+			}
+
+			/// https://github.com/ocornut/imgui/issues/434
+			if (ImGui::CollapsingHeader("Pie Popup Menu"))
+			{
+				static const char* test_data = "Menu";
+				const char* items[] = { "Orange", "Blue", "Purple", "Gray", "Yellow", "Las Vegas" };
+				int items_count = sizeof(items) / sizeof(*items);
+				static int mouse = 0;
+				static int selected = -1;
+
+				ImGui::Button(selected >= 0 ? items[selected] : "Menu", ImVec2(50, 50));
+
+				/// usage with button/item pressed
+				if (ImGui::IsItemActive())          // Don't wait for button release to activate the pie menu
+				{
+					mouse = 0;
+					ImGui::OpenPopup("##piepopup");
+				}
+					
+				/// usage for right mouse click and not over window (or check for specifc window ... )
+				if (!ImGui::IsMouseHoveringAnyWindow() && ImGui::IsMouseClicked(1))
+				{
+					mouse = 1;
+					ImGui::OpenPopup("##piepopup");
+				}
+					
+
+				ImVec2 pie_menu_center = ImGui::GetIO().MouseClickedPos[mouse];
+				ImGui::PiePopupSelectMenu(pie_menu_center, "##piepopup", items, items_count, &selected);
+				
+			}
+
+	
+			ImGui::Unindent();
+		}
+
+	
+	}
+	ImGui::End();
+
+}
+~~~~
+
+HelloIMUI.h
+~~~~
+#pragma once
+
+#include "Sample.h"
+
+namespace Urho3D
+{
+
+}
+
+class HelloIMUI : public Sample
+{
+	URHO3D_OBJECT(HelloIMUI, Sample);
+
+public:
+    /// Construct.
+    HelloIMUI(Context* context);
+	/// Setup before engine initialization. Modifies the engine parameters.
+	virtual void Setup();
+    /// Setup after engine initialization and before running the main loop.
+    virtual void Start();
+	/// Cleanup after the main loop. Called by Application.
+	virtual void Stop();
+protected:
+    /// Return XML patch instructions for screen joystick layout for a specific sample app, if any.
+    virtual String GetScreenJoystickPatchString() const { return
+        "<patch>"
+        "    <add sel=\"/element/element[./attribute[@name='Name' and @value='Hat0']]\">"
+        "        <attribute name=\"Is Visible\" value=\"false\" />"
+        "    </add>"
+        "</patch>";
+    }
+
+	void HandleUpdate(StringHash eventType, VariantMap& eventData);
+private:
+
+};
+~~~
+
